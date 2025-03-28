@@ -57,6 +57,10 @@
             box-shadow: 0 0 10px #ff00ff; /* More glow on hover */
         }
 
+        audio {
+        display: none;
+        }
+        
         /* Button container for multiple buttons with spacing */
         .button-container {
             display: flex;
@@ -258,9 +262,15 @@
             z-index: 99;
             transition: opacity 0.05s ease-out; /* Quick fade */
         }
+
+        
     </style>
 </head>
 <body>
+    <audio autoplay loop>
+        <source src="bg.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+      </audio>
     <!-- Adding a loading message -->
     <div id="loading" style="position:absolute; top:10px; left:10px;">Loading Grid Runner OS...</div>
 
