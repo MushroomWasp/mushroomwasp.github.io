@@ -149,6 +149,28 @@
             background-color: #001a1a;
             box-shadow: 0 0 10px #00ffff;
         }
+        /* Music Toggle Button Specific Styles */
+        #musicToggleBtn {
+            padding: 8px 20px;
+            font-size: 1.0em;
+            background-color: rgba(26, 26, 26, 0.7);
+            border: 1px solid #ff4444; /* Red border for distinction */
+            color: #ff4444; /* Red text */
+            margin-top: 10px; /* Space from main buttons */
+        }
+        #musicToggleBtn:hover {
+            background-color: #2a0000; /* Dark red hover */
+            box-shadow: 0 0 10px #ff4444; /* Red glow */
+        }
+        #musicToggleBtn.on {
+            background-color: rgba(0, 255, 0, 0.1); /* Subtle green when ON */
+            border-color: #00ff00; /* Green border */
+            color: #00ff00; /* Green text */
+        }
+        #musicToggleBtn.on:hover {
+            background-color: #002a00; /* Dark green hover */
+            box-shadow: 0 0 10px #00ff00; /* Green glow */
+        }
         #about-link {
             margin-top: 15px;
             font-size: 0.9em;
@@ -308,7 +330,7 @@
     </style>
 </head>
 <body>
-    <audio autoplay loop>
+    <audio id="backgroundMusic" autoplay loop>
         <source src="bg2.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
@@ -329,6 +351,7 @@
             <button id="startBtn">Initialize</button>
             <button id="howtoBtn" class="secondary-btn">How to Play</button>
         </div>
+        <button id="musicToggleBtn" class="on">MUSIC ON</button>
         <div id="about-link">about</div>
     </div>
     <div id="about-popup">
@@ -429,6 +452,23 @@
             if (startBtn && background) {
                 startBtn.addEventListener('click', () => {
                     background.style.display = 'none';
+                });
+            }
+
+            // Music toggle functionality
+            const musicToggleBtn = document.getElementById('musicToggleBtn');
+            const audio = document.getElementById('backgroundMusic');
+            if (musicToggleBtn && audio) {
+                musicToggleBtn.addEventListener('click', () => {
+                    if (audio.paused) {
+                        audio.play();
+                        musicToggleBtn.textContent = 'MUSIC ON';
+                        musicToggleBtn.classList.add('on');
+                    } else {
+                        audio.pause();
+                        musicToggleBtn.textContent = 'MUSIC OFF';
+                        musicToggleBtn.classList.remove('on');
+                    }
                 });
             }
         });
