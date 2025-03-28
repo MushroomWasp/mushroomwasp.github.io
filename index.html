@@ -32,6 +32,7 @@
             flex-direction: column;
             align-items: center;
             min-width: 250px; /* Ensure minimum width */
+            z-index: 20; /* Above game info */
         }
         #message {
              margin-bottom: 20px;
@@ -71,7 +72,33 @@
             display: none; /* Initially hidden */
             z-index: 10;
             text-shadow: 0 0 5px #00ffff; /* Cyan text glow */
+            line-height: 1.4; /* Spacing */
         }
+
+        /* Boost Meter Styles */
+        #boost-meter {
+            width: 150px; /* Width of the boost bar container */
+            height: 15px; /* Height of the boost bar */
+            background-color: rgba(50, 0, 50, 0.8); /* Dark purple background */
+            border: 1px solid #ff00ff; /* Magenta border */
+            margin-top: 5px; /* Space above the meter */
+            overflow: hidden; /* Hide overflow */
+            display: inline-block; /* Allow text before/after */
+            vertical-align: middle; /* Align with text */
+        }
+        #boost-level {
+            width: 100%; /* Start full */
+            height: 100%;
+            background-color: #ff00ff; /* Magenta fill color */
+            transition: width 0.1s linear, background-color 0.2s linear; /* Smooth transitions */
+            box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.5); /* Inner glow */
+        }
+        .boost-label {
+            font-size: 0.8em; /* Smaller label */
+            margin-right: 5px; /* Space before bar */
+            vertical-align: middle; /* Align with bar */
+        }
+
 
         /* Loading/Error Styles */
         #loading, #error-output {
@@ -82,6 +109,19 @@
         #loading { color: #00ffff; }
         #error-output { color: #ff4444; background-color: rgba(0,0,0,0.5); }
 
+        /* Flash effect styles */
+        #flash-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 0, 0, 0.7); /* Red flash */
+            opacity: 0;
+            pointer-events: none; /* Don't interfere with clicks */
+            z-index: 99;
+            transition: opacity 0.05s ease-out; /* Quick fade */
+        }
     </style>
 </head>
 <body>
@@ -91,12 +131,21 @@
     <!-- Center UI -->
     <div id="ui">
         <div id="message">Press Start to Drive</div>
-        <button id="startBtn">Initialize</button> <!-- Changed button text -->
+        <button id="startBtn">Initialize</button>
     </div>
+
+    <!-- Flash effect overlay for collisions -->
+    <div id="flash-overlay"></div>
 
     <!-- Game Info UI -->
     <div id="game-info">
-        <span id="speedometer">SPD: 0 km/h</span> <!-- Abbreviated label -->
+        <span id="speedometer">SPD: 0 km/h</span> <br>
+        <span id="score">Score: 0</span> <br>
+        <!-- Boost Meter Added Here -->
+        <span class="boost-label">BST:</span>
+        <div id="boost-meter">
+            <div id="boost-level"></div>
+        </div>
     </div>
 
     <!-- Error output -->
@@ -115,6 +164,6 @@
             if (loadingElement) loadingElement.style.display = 'none';
         });
     </script>
-    <script type="module" src="app.js"></script>
+    <script type="module" src="app.js"></script> <!-- Make sure this points to your JS file -->
 </body>
 </html>
