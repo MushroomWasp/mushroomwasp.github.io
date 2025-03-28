@@ -490,6 +490,7 @@ function resetGame() {
   console.log("Environment Reset Complete.");
 }
 
+let hasSeenIntroScreen = false;
 function startGame() {
   console.log("Connecting to Grid...");
   if (!uiElement || !gameInfoElement) {
@@ -497,156 +498,6 @@ function startGame() {
     return;
   }
   uiElement.style.display = "none";
-  
-  // Create and show the intro screen
-  const introScreen = document.createElement("div");
-  introScreen.id = "intro-screen";
-  introScreen.innerHTML = `
-    <div class="intro-title">GRIDLINE RACER</div>
-    <div class="intro-subtitle">SYS://INIT_SEQUENCE</div>
-    
-    <div class="intro-controls">
-      <div class="control-item"><span class="key">SHIFT</span> PHASE THROUGH OBSTACLES</div>
-      <div class="control-item"><span class="key">↑</span><span class="key">W</span> ACCELERATE</div>
-      <div class="control-item"><span class="key">↓</span><span class="key">S</span> DECELERATE</div>
-      <div class="control-item"><span class="key">←</span><span class="key">A</span> LEFT LANE</div>
-      <div class="control-item"><span class="key">→</span><span class="key">D</span> RIGHT LANE</div>
-    </div>
-    
-    <div class="intro-message">> ENTERING GRID SECTOR 7001 <</div>
-    
-    <button id="continue-btn" class="continue-button">CONTINUE >></button>
-  `;
-  document.body.appendChild(introScreen);
-  
-  // Add CSS for the intro screen
-  const style = document.createElement('style');
-  style.textContent = `
-    #intro-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(5, 0, 16, 0.9);
-      color: #00ffff;
-      font-family: 'Courier New', monospace;
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      animation: glitch-in 0.3s forwards;
-    }
-    .intro-title {
-      font-size: 3.5rem;
-      margin-bottom: 0.5rem;
-      color: #ff00ff;
-      text-shadow: 0 0 10px #ff00ff;
-      letter-spacing: 4px;
-      font-weight: bold;
-    }
-    .intro-subtitle {
-      font-size: 1.2rem;
-      color: #00ffff;
-      margin-bottom: 2rem;
-      text-shadow: 0 0 5px #00ffff;
-      opacity: 0.8;
-      letter-spacing: 2px;
-    }
-    .intro-controls {
-      display: flex;
-      flex-direction: column;
-      gap: 0.8rem;
-      margin-bottom: 2.5rem;
-      background-color: rgba(10, 0, 20, 0.5);
-      padding: 1.5rem 2rem;
-      border: 1px solid #00ffff;
-      box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
-    }
-    .control-item {
-      font-size: 1.2rem;
-      color: #fff;
-      text-shadow: 0 0 3px #fff;
-    }
-    .key {
-      display: inline-block;
-      background-color: rgba(0, 0, 0, 0.7);
-      padding: 0.2rem 0.5rem;
-      margin: 0 0.3rem;
-      border: 1px solid #00ffff;
-      text-shadow: 0 0 5px #00ffff;
-      min-width: 1.5rem;
-      color: #00ffff;
-      font-weight: bold;
-    }
-    .intro-message {
-      font-size: 1.2rem;
-      color: #ff00ff;
-      text-shadow: 0 0 5px #ff00ff;
-      letter-spacing: 1px;
-      animation: blink 1s infinite;
-      margin-bottom: 2.5rem;
-    }
-    .continue-button {
-      background-color: rgba(0, 0, 0, 0.6);
-      color: #00ffff;
-      border: 1px solid #00ffff;
-      padding: 0.8rem 1.5rem;
-      font-family: 'Courier New', monospace;
-      font-size: 1.2rem;
-      cursor: pointer;
-      letter-spacing: 2px;
-      transition: all 0.2s;
-      box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-      text-shadow: 0 0 5px #00ffff;
-      animation: pulse 1.5s infinite;
-    }
-    .continue-button:hover {
-      background-color: rgba(0, 255, 255, 0.2);
-      transform: scale(1.05);
-    }
-    @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 255, 0.5); }
-      50% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.8); }
-    }
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-    @keyframes glitch-in {
-      0% { 
-        clip-path: inset(100% 0 0 0);
-        transform: translateY(-20px);
-      }
-      20% { 
-        clip-path: inset(20% 0 40% 0);
-        transform: translateY(10px);
-      }
-      40% { 
-        clip-path: inset(40% 0 20% 0);
-        transform: translateY(-10px);
-      }
-      60% { 
-        clip-path: inset(10% 0 70% 0);
-        transform: translateY(5px);
-      }
-      80% { 
-        clip-path: inset(0 0 10% 0);
-        transform: translateY(0);
-      }
-      100% { 
-        clip-path: inset(0);
-        transform: translateY(0);
-      }
-    }
-    @keyframes fadeOut {
-      from { opacity: 1; }
-      to { opacity: 0; }
-    }
-  `;
-  document.head.appendChild(style);
   
   // Cancel any existing animation frames
   if (animationFrameId) cancelAnimationFrame(animationFrameId);
@@ -658,24 +509,185 @@ function startGame() {
   // Reset game state
   resetGame();
   
-  // Add click event for continue button
-  const continueBtn = document.getElementById('continue-btn');
-  if (continueBtn) {
-    continueBtn.addEventListener('click', () => {
-      // Fade out animation
-      introScreen.style.animation = 'fadeOut 0.5s forwards';
+  // Only show intro screen if it's the first time
+  if (!hasSeenIntroScreen) {
+    // Create and show the intro screen
+    const introScreen = document.createElement("div");
+    introScreen.id = "intro-screen";
+    introScreen.innerHTML = `
+      <div class="intro-title">GRIDLINE RACER</div>
+      <div class="intro-subtitle">SYS://INIT_SEQUENCE</div>
       
-      // Remove after animation completes and start game
-      setTimeout(() => {
-        introScreen.remove();
-        style.remove();
+      <div class="intro-controls">
+        <div class="control-item"><span class="key">SHIFT</span> PHASE THROUGH OBSTACLES</div>
+        <div class="control-item"><span class="key">↑</span><span class="key">W</span> ACCELERATE</div>
+        <div class="control-item"><span class="key">↓</span><span class="key">S</span> DECELERATE</div>
+        <div class="control-item"><span class="key">←</span><span class="key">A</span> LEFT LANE</div>
+        <div class="control-item"><span class="key">→</span><span class="key">D</span> RIGHT LANE</div>
+      </div>
+      
+      <div class="intro-message">> ENTERING GRID SECTOR 7001 <</div>
+      
+      <button id="continue-btn" class="continue-button">RACE >></button>
+    `;
+    document.body.appendChild(introScreen);
+    
+    // Add CSS for the intro screen
+    const style = document.createElement('style');
+    style.textContent = `
+      #intro-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(5, 0, 16, 0.9);
+        color: #00ffff;
+        font-family: 'Courier New', monospace;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        animation: glitch-in 0.3s forwards;
+      }
+      .intro-title {
+        font-size: 3.5rem;
+        margin-bottom: 0.5rem;
+        color: #ff00ff;
+        text-shadow: 0 0 10px #ff00ff;
+        letter-spacing: 4px;
+        font-weight: bold;
+      }
+      .intro-subtitle {
+        font-size: 1.2rem;
+        color: #00ffff;
+        margin-bottom: 2rem;
+        text-shadow: 0 0 5px #00ffff;
+        opacity: 0.8;
+        letter-spacing: 2px;
+      }
+      .intro-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        margin-bottom: 2.5rem;
+        background-color: rgba(10, 0, 20, 0.5);
+        padding: 1.5rem 2rem;
+        border: 1px solid #00ffff;
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+      }
+      .control-item {
+        font-size: 1.2rem;
+        color: #fff;
+        text-shadow: 0 0 3px #fff;
+      }
+      .key {
+        display: inline-block;
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 0.2rem 0.5rem;
+        margin: 0 0.3rem;
+        border: 1px solid #00ffff;
+        text-shadow: 0 0 5px #00ffff;
+        min-width: 1.5rem;
+        color: #00ffff;
+        font-weight: bold;
+      }
+      .intro-message {
+        font-size: 1.2rem;
+        color: #ff00ff;
+        text-shadow: 0 0 5px #ff00ff;
+        letter-spacing: 1px;
+        animation: blink 1s infinite;
+        margin-bottom: 2.5rem;
+      }
+      .continue-button {
+        background-color: rgba(0, 0, 0, 0.6);
+        color: #00ffff;
+        border: 1px solid #00ffff;
+        padding: 0.8rem 1.5rem;
+        font-family: 'Courier New', monospace;
+        font-size: 1.2rem;
+        cursor: pointer;
+        letter-spacing: 2px;
+        transition: all 0.2s;
+        box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        text-shadow: 0 0 5px #00ffff;
+        animation: pulse 1.5s infinite;
+      }
+      .continue-button:hover {
+        background-color: rgba(0, 255, 255, 0.2);
+        transform: scale(1.05);
+      }
+      @keyframes pulse {
+        0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 255, 0.5); }
+        50% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.8); }
+      }
+      @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+      }
+      @keyframes glitch-in {
+        0% { 
+          clip-path: inset(100% 0 0 0);
+          transform: translateY(-20px);
+        }
+        20% { 
+          clip-path: inset(20% 0 40% 0);
+          transform: translateY(10px);
+        }
+        40% { 
+          clip-path: inset(40% 0 20% 0);
+          transform: translateY(-10px);
+        }
+        60% { 
+          clip-path: inset(10% 0 70% 0);
+          transform: translateY(5px);
+        }
+        80% { 
+          clip-path: inset(0 0 10% 0);
+          transform: translateY(0);
+        }
+        100% { 
+          clip-path: inset(0);
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    // Add click event for continue button
+    const continueBtn = document.getElementById('continue-btn');
+    if (continueBtn) {
+      continueBtn.addEventListener('click', () => {
+        // Fade out animation
+        introScreen.style.animation = 'fadeOut 0.5s forwards';
         
-        // Start the actual game
-        gameInfoElement.style.display = "block";
-        if (carTrail) carTrail.visible = true;
-        animate();
-      }, 500); // Duration of fadeOut animation
-    });
+        // Remove after animation completes and start game
+        setTimeout(() => {
+          introScreen.remove();
+          style.remove();
+          
+          // Mark that the user has seen the intro screen
+          hasSeenIntroScreen = true;
+          
+          // Start the actual game
+          gameInfoElement.style.display = "block";
+          if (carTrail) carTrail.visible = true;
+          animate();
+        }, 500); // Duration of fadeOut animation
+      });
+    }
+  } else {
+    // If the player has already seen the intro screen, just start the game directly
+    gameInfoElement.style.display = "block";
+    if (carTrail) carTrail.visible = true;
+    animate();
   }
 }
 
