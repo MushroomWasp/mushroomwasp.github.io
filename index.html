@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cyberpunk Runner</title>
+    <style>
+        /* Import a suitable font (optional, but adds flavor) */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap'); /* Example: Orbitron */
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000000; /* Black background */
+            color: #00ffff; /* Default text color: Cyan */
+            font-family: 'Orbitron', sans-serif; /* Apply cyberpunk font */
+        }
+        canvas { display: block; }
+
+        /* Center UI for Start/End */
+        #ui {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(10, 0, 20, 0.85); /* Dark purple semi-transparent */
+            color: #00ffff; /* Cyan text */
+            padding: 30px; /* More padding */
+            border-radius: 0px; /* Sharp edges */
+            border: 1px solid #ff00ff; /* Magenta border */
+            box-shadow: 0 0 15px #ff00ff; /* Magenta glow */
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 250px; /* Ensure minimum width */
+        }
+        #message {
+             margin-bottom: 20px;
+             white-space: pre-wrap;
+             font-size: 1.2em;
+             text-shadow: 0 0 5px #00ffff; /* Cyan text glow */
+        }
+        button {
+            padding: 12px 25px;
+            font-size: 1.3em;
+            cursor: pointer;
+            background-color: #1a1a1a; /* Dark background */
+            color: #ff00ff; /* Magenta text */
+            border: 1px solid #ff00ff; /* Magenta border */
+            border-radius: 0; /* Sharp edges */
+            font-family: 'Orbitron', sans-serif; /* Match font */
+            text-transform: uppercase; /* Uppercase text */
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        button:hover {
+            background-color: #2a002a; /* Darker magenta on hover */
+            box-shadow: 0 0 10px #ff00ff; /* More glow on hover */
+        }
+
+        /* Top-Left UI for during gameplay */
+        #game-info {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            color: #00ffff; /* Cyan text */
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8em; /* Larger font */
+            background-color: rgba(10, 0, 20, 0.7); /* Dark purple background */
+            padding: 8px 15px;
+            border: 1px solid #00ffff; /* Cyan border */
+            box-shadow: 0 0 8px #00ffff; /* Cyan glow */
+            display: none; /* Initially hidden */
+            z-index: 10;
+            text-shadow: 0 0 5px #00ffff; /* Cyan text glow */
+        }
+
+        /* Loading/Error Styles */
+        #loading, #error-output {
+            font-family: 'Orbitron', sans-serif;
+            padding: 5px;
+            text-shadow: 0 0 3px #ffffff;
+        }
+        #loading { color: #00ffff; }
+        #error-output { color: #ff4444; background-color: rgba(0,0,0,0.5); }
+
+    </style>
+</head>
+<body>
+    <!-- Adding a loading message -->
+    <div id="loading" style="position:absolute; top:10px; left:10px;">Loading Grid Runner OS...</div>
+
+    <!-- Center UI -->
+    <div id="ui">
+        <div id="message">Press Start to Drive</div>
+        <button id="startBtn">Initialize</button> <!-- Changed button text -->
+    </div>
+
+    <!-- Game Info UI -->
+    <div id="game-info">
+        <span id="speedometer">SPD: 0 km/h</span> <!-- Abbreviated label -->
+    </div>
+
+    <!-- Error output -->
+    <div id="error-output" style="position:absolute; bottom:10px; left:10px; max-width:80%; max-height: 100px; overflow-y: auto;"></div>
+
+    <!-- Scripts -->
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded');
+            const loadingElement = document.getElementById('loading');
+            if(loadingElement) loadingElement.innerText = "Awaiting Initialization...";
+        });
+        window.addEventListener('load', () => {
+            console.log('Resources loaded');
+            const loadingElement = document.getElementById('loading');
+            if (loadingElement) loadingElement.style.display = 'none';
+        });
+    </script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
