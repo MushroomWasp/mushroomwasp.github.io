@@ -57,6 +57,143 @@
             box-shadow: 0 0 10px #ff00ff; /* More glow on hover */
         }
 
+        /* Button container for multiple buttons with spacing */
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        /* Secondary button (How to Play) */
+        .secondary-btn {
+            padding: 8px 20px;
+            font-size: 1.0em;
+            background-color: rgba(26, 26, 26, 0.7);
+            border: 1px solid #00ffff; /* Cyan border */
+            color: #00ffff; /* Cyan text */
+        }
+        .secondary-btn:hover {
+            background-color: #001a1a; /* Darker cyan on hover */
+            box-shadow: 0 0 10px #00ffff; /* Cyan glow */
+        }
+
+        /* About link styles */
+        #about-link {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #ff00ff;
+            cursor: pointer;
+            text-decoration: underline;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+        #about-link:hover {
+            opacity: 1;
+            text-shadow: 0 0 8px #ff00ff;
+        }
+
+        /* About popup styles */
+        #about-popup {
+            display: none;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(10, 0, 20, 0.9);
+            color: #00ffff;
+            padding: 15px 25px;
+            border: 1px solid #ff00ff;
+            box-shadow: 0 0 10px #ff00ff;
+            border-radius: 0;
+            text-align: center;
+            font-size: 0.9em;
+            z-index: 25;
+            line-height: 1.4;
+            max-width: 80%;
+        }
+        #about-popup a {
+            color: #ff00ff;
+            text-decoration: none;
+            transition: text-shadow 0.3s;
+        }
+        #about-popup a:hover {
+            text-shadow: 0 0 5px #ff00ff;
+        }
+        .about-close {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            cursor: pointer;
+            color: #ff00ff;
+        }
+        .social-link {
+            display: inline-block;
+            margin: 5px 10px;
+        }
+        .creator-info {
+            margin: 5px 0;
+        }
+        .ai-mention {
+            font-style: italic;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
+        /* How to Play popup styles */
+        #howto-popup {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(10, 0, 20, 0.95);
+            color: #00ffff;
+            padding: 25px;
+            border: 1px solid #00ffff;
+            box-shadow: 0 0 15px #00ffff;
+            border-radius: 0;
+            text-align: left;
+            font-size: 0.95em;
+            z-index: 30;
+            max-width: 80%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .howto-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            cursor: pointer;
+            color: #00ffff;
+            font-size: 1.5em;
+        }
+        .howto-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            text-transform: uppercase;
+            color: #ffffff;
+            text-shadow: 0 0 5px #00ffff;
+        }
+        .instruction-section {
+            margin-bottom: 15px;
+        }
+        .instruction-title {
+            color: #ff00ff;
+            margin-bottom: 5px;
+            text-shadow: 0 0 5px #ff00ff;
+        }
+        .key {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 2px 8px;
+            border: 1px solid #00ffff;
+            border-radius: 4px;
+            margin: 0 3px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
         /* Top-Left UI for during gameplay */
         #game-info {
             position: absolute;
@@ -99,7 +236,6 @@
             vertical-align: middle; /* Align with bar */
         }
 
-
         /* Loading/Error Styles */
         #loading, #error-output {
             font-family: 'Orbitron', sans-serif;
@@ -131,7 +267,59 @@
     <!-- Center UI -->
     <div id="ui">
         <div id="message">Press Start to Drive</div>
-        <button id="startBtn">Initialize</button>
+        <!-- Button container to group both buttons -->
+        <div class="button-container">
+            <button id="startBtn">Initialize</button>
+            <button id="howtoBtn" class="secondary-btn">How to Play</button>
+        </div>
+        <div id="about-link">about</div>
+    </div>
+
+    <!-- About popup -->
+    <div id="about-popup">
+        <span class="about-close">&times;</span>
+        <div class="creator-info">Made by Omar Hasan</div>
+        <div class="social-link">
+            <a href="https://x.com/MushroomWasp" target="_blank">X: x.com/MushroomWasp</a>
+        </div>
+        <div class="ai-mention">vibing with AI</div>
+    </div>
+
+    <!-- How to Play popup -->
+    <div id="howto-popup">
+        <span class="howto-close">&times;</span>
+        <div class="howto-title">How to Play</div>
+        
+        <div class="instruction-section">
+            <div class="instruction-title">Controls</div>
+            <p><span class="key"><</span> <span class="key">A</span> Move left</p>
+            <p><span class="key">></span> <span class="key">D</span> Move right</p>
+            <p><span class="key">^</span> <span class="key">W</span> Increase speed</p>
+            <p><span class="key">v</span> <span class="key">S</span> Decrease speed</p>
+            <p><span class="key">SHIFT</span> Activate boost/phase (hold)</p>
+        </div>
+        
+        <div class="instruction-section">
+            <div class="instruction-title">Objective</div>
+            <p>Navigate through the cyberpunk city avoiding buildings and obstacles.</p>
+            <p>Switch lanes quickly to avoid collisions.</p>
+            <p>Gain points based on distance traveled and near misses.</p>
+        </div>
+        
+        <div class="instruction-section">
+            <div class="instruction-title">Special Ability: Phase</div>
+            <p>Hold <span class="key">SHIFT</span> to activate boost mode.</p>
+            <p>While boosting, you can phase through obstacles!</p>
+            <p>Your boost meter (BST) will deplete while active.</p>
+            <p>The meter regenerates when not in use.</p>
+        </div>
+        
+        <div class="instruction-section">
+            <div class="instruction-title">Scoring</div>
+            <p>Points accumulate automatically as you travel.</p>
+            <p>Perform near misses for bonus points (+50).</p>
+            <p>Higher speeds earn points faster.</p>
+        </div>
     </div>
 
     <!-- Flash effect overlay for collisions -->
@@ -157,7 +345,51 @@
             console.log('DOM loaded');
             const loadingElement = document.getElementById('loading');
             if(loadingElement) loadingElement.innerText = "Awaiting Initialization...";
+            
+            // About popup functionality
+            const aboutLink = document.getElementById('about-link');
+            const aboutPopup = document.getElementById('about-popup');
+            const closeAbout = document.querySelector('.about-close');
+            
+            if (aboutLink && aboutPopup && closeAbout) {
+                aboutLink.addEventListener('click', () => {
+                    aboutPopup.style.display = 'block';
+                });
+                
+                closeAbout.addEventListener('click', () => {
+                    aboutPopup.style.display = 'none';
+                });
+            }
+            
+            // How to Play popup functionality
+            const howtoBtn = document.getElementById('howtoBtn');
+            const howtoPopup = document.getElementById('howto-popup');
+            const closeHowto = document.querySelector('.howto-close');
+            
+            if (howtoBtn && howtoPopup && closeHowto) {
+                howtoBtn.addEventListener('click', () => {
+                    howtoPopup.style.display = 'block';
+                });
+                
+                closeHowto.addEventListener('click', () => {
+                    howtoPopup.style.display = 'none';
+                });
+            }
+            
+            // Close popups on click outside
+            document.addEventListener('click', (e) => {
+                // For about popup
+                if (e.target !== aboutLink && aboutPopup && !aboutPopup.contains(e.target)) {
+                    aboutPopup.style.display = 'none';
+                }
+                
+                // For howto popup - only if click is not on the button
+                if (e.target !== howtoBtn && howtoPopup && !howtoPopup.contains(e.target)) {
+                    howtoPopup.style.display = 'none';
+                }
+            });
         });
+        
         window.addEventListener('load', () => {
             console.log('Resources loaded');
             const loadingElement = document.getElementById('loading');
