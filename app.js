@@ -893,166 +893,183 @@ function checkCollisionsAndNearMisses() {
   }
 }
 
-// --- Game Loop (MODIFIED for Opacity) ---
+// --- Game Loop (MODIFIED for Min Speed & Speed Display) ---
 function animate() {
-  if (gameOver) return;
-  animationFrameId = requestAnimationFrame(animate);
-  delta = clock.getDelta();
-
-  // --- Update Game Logic ---
-  score += Math.floor(speed * delta * 10);
-  minSpeed = baseMinSpeed + distanceTraveled * speedIncreaseRate;
-  targetSpeed = Math.max(targetSpeed, minSpeed);
-
-  // --- Boost Logic & Sound ---
-  const currentMaxSpeed = isBoosting
-    ? maxSpeed * boostSpeedMultiplier
-    : maxSpeed;
-  const currentAcceleration = isBoosting ? acceleration * 1.8 : acceleration; // Even stronger boost accel
-
-  if (isBoosting) {
-    boostFuel -= boostConsumeRate * delta;
-    if (boostFuel <= 0) {
-      isBoosting = false;
-      boostFuel = 0;
-      if (boostSound && isBoostSoundActive) {
+    if (gameOver) return;
+    animationFrameId = requestAnimationFrame(animate);
+    delta = clock.getDelta();
+  
+    // --- Update Game Logic ---
+  
+    // --- >>> SCORING MODIFICATION (Already Implemented) <<< ---
+    const scoreMultiplier = 2;
+    score += Math.floor(Math.pow(speed, 2) * delta * scoreMultiplier);
+    // --- >>> SCORING MODIFICATION END <<< ---
+  
+  
+    // --- >>> MINIMUM SPEED INCREASE (Already Implemented, Verified Use) <<< ---
+    // minSpeed increases gradually based on distance
+    minSpeed = baseMinSpeed + distanceTraveled * speedIncreaseRate;
+    // Ensure the target speed never falls below the current minimum speed
+    targetSpeed = Math.max(targetSpeed, minSpeed);
+    // --- >>> MINIMUM SPEED INCREASE END <<< ---
+  
+  
+    // --- Boost Logic & Sound ---
+    const currentMaxSpeed = isBoosting
+      ? maxSpeed * boostSpeedMultiplier
+      : maxSpeed;
+    const currentAcceleration = isBoosting ? acceleration * 1.8 : acceleration;
+  
+    if (isBoosting) {
+      boostFuel -= boostConsumeRate * delta;
+      if (boostFuel <= 0) {
+        isBoosting = false;
+        boostFuel = 0;
+        if (boostSound && isBoostSoundActive) {
+          boostSound.triggerRelease();
+          isBoostSoundActive = false;
+        }
+      }
+      if (!isBoostSoundActive && boostSound && boostFuel > 0) {
+        boostSound.triggerAttack();
+        isBoostSoundActive = true;
+      }
+    } else {
+      boostFuel = Math.min(boostMaxFuel, boostFuel + boostRegenRate * delta);
+      if (isBoostSoundActive && boostSound) {
         boostSound.triggerRelease();
         isBoostSoundActive = false;
       }
     }
-    if (!isBoostSoundActive && boostSound && boostFuel > 0) {
-      boostSound.triggerAttack();
-      isBoostSoundActive = true;
+  
+    // Update boost meter UI
+    if (boostLevelElement) {
+      const boostPercentage = (boostFuel / boostMaxFuel) * 100;
+      boostLevelElement.style.width = `${boostPercentage}%`;
+      if (boostPercentage < 25)
+        boostLevelElement.style.backgroundColor = "#ff3333";
+      else if (boostPercentage < 50)
+        boostLevelElement.style.backgroundColor = "#ffaa33";
+      else boostLevelElement.style.backgroundColor = "#ff00ff";
     }
-  } else {
-    boostFuel = Math.min(boostMaxFuel, boostFuel + boostRegenRate * delta);
-    if (isBoostSoundActive && boostSound) {
-      boostSound.triggerRelease();
-      isBoostSoundActive = false;
-    }
-  }
-
-  // Update boost meter UI
-  if (boostLevelElement) {
-    /* ... update UI ... */
-    const boostPercentage = (boostFuel / boostMaxFuel) * 100;
-    boostLevelElement.style.width = `${boostPercentage}%`;
-    if (boostPercentage < 25)
-      boostLevelElement.style.backgroundColor = "#ff3333";
-    else if (boostPercentage < 50)
-      boostLevelElement.style.backgroundColor = "#ffaa33";
-    else boostLevelElement.style.backgroundColor = "#ff00ff";
-  }
-
-  // Update speed
-  if (speed < targetSpeed)
-    speed = Math.min(speed + currentAcceleration, currentMaxSpeed);
-  else if (speed > targetSpeed)
-    speed = Math.max(speed - deceleration, targetSpeed);
-  speed = Math.min(speed, currentMaxSpeed);
-
-  // --- >>> MODIFICATION START: Car Opacity for Phasing <<< ---
-  const targetOpacityValue = isBoosting ? BOOST_OPACITY : 1.0;
-  setCarOpacity(targetOpacityValue); // Use helper function for smooth transition
-  // --- >>> MODIFICATION END <<< ---
-
-  if (car) {
-    const targetX = lane * laneWidth;
-    const oldX = car.position.x;
-    car.position.x += (targetX - oldX) * 0.2;
-    car.position.z -= speed;
-    distanceTraveled += speed;
-
-    // --- Drift Sound Logic ---
-    const isCurrentlySwitchingLanes =
-      Math.abs(car.position.x - targetX) > 0.1 &&
-      Math.abs(oldX - targetX) > 0.1;
-    if (driftSynth) {
-      if (isCurrentlySwitchingLanes && !isDriftSynthActive) {
-        driftSynth.triggerAttack();
-        isDriftSynthActive = true;
-      } else if (!isCurrentlySwitchingLanes && isDriftSynthActive) {
-        driftSynth.triggerRelease();
-        isDriftSynthActive = false;
+  
+    // Update speed (Ensure speed doesn't drop below current minSpeed during deceleration)
+    if (speed < targetSpeed)
+      speed = Math.min(speed + currentAcceleration, currentMaxSpeed);
+    else if (speed > targetSpeed)
+      // Ensure deceleration doesn't go below the *current* minimum speed
+      speed = Math.max(speed - deceleration, minSpeed);
+    speed = Math.min(speed, currentMaxSpeed); // Clamp speed to current max
+  
+  
+    // --- Car Opacity for Phasing ---
+    const targetOpacityValue = isBoosting ? BOOST_OPACITY : 1.0;
+    setCarOpacity(targetOpacityValue);
+  
+  
+    if (car) {
+      const targetX = lane * laneWidth;
+      const oldX = car.position.x;
+      car.position.x += (targetX - oldX) * 0.2;
+      car.position.z -= speed;
+      distanceTraveled += speed;
+  
+      // --- Drift Sound Logic ---
+      const isCurrentlySwitchingLanes =
+        Math.abs(car.position.x - targetX) > 0.1 &&
+        Math.abs(oldX - targetX) > 0.1;
+      if (driftSynth) {
+        if (isCurrentlySwitchingLanes && !isDriftSynthActive) {
+          driftSynth.triggerAttack();
+          isDriftSynthActive = true;
+        } else if (!isCurrentlySwitchingLanes && isDriftSynthActive) {
+          driftSynth.triggerRelease();
+          isDriftSynthActive = false;
+        }
       }
-    }
-
-    // Update Camera & FOV
-    camera.position.z = car.position.z + 14;
-    camera.position.y = 7;
-    camera.position.x += (car.position.x - camera.position.x) * 0.05;
-    camera.lookAt(car.position.x, 1, car.position.z - 15);
-    const baseFOV = 75;
-    const maxFOVBoost = isBoosting ? 18 : 10; // Enhanced boost FOV
-    camera.fov = baseFOV + (speed / currentMaxSpeed) * maxFOVBoost;
-    camera.updateProjectionMatrix();
-
-    // Camera Shake
-    const speedShakeIntensity = speed * 0.005 + (isBoosting ? 0.02 : 0); // More boost shake
-    const shakeX = (Math.random() - 0.5) * speedShakeIntensity;
-    const shakeY = (Math.random() - 0.5) * speedShakeIntensity;
-    camera.position.x += shakeX;
-    camera.position.y += shakeY;
-
-    // Road & Obstacle Management
-    if (roadSegments.length > 0) {
-      /* ... road gen ... */
-      const farthestRoadZ = roadSegments[roadSegments.length - 1].position.z;
-      if (
-        car.position.z <
-        farthestRoadZ + roadSegmentLength * (visibleSegments / 2)
-      ) {
-        const nextSegmentZ = farthestRoadZ - roadSegmentLength;
-        createRoadSegment(nextSegmentZ);
+  
+      // Update Camera & FOV
+      camera.position.z = car.position.z + 14;
+      camera.position.y = 7;
+      camera.position.x += (car.position.x - camera.position.x) * 0.05;
+      camera.lookAt(car.position.x, 1, car.position.z - 15);
+      const baseFOV = 75;
+      const maxFOVBoost = isBoosting ? 18 : 10;
+      camera.fov = baseFOV + (speed / currentMaxSpeed) * maxFOVBoost;
+      camera.updateProjectionMatrix();
+  
+      // Camera Shake
+      const speedShakeIntensity = speed * 0.005 + (isBoosting ? 0.02 : 0);
+      const shakeX = (Math.random() - 0.5) * speedShakeIntensity;
+      const shakeY = (Math.random() - 0.5) * speedShakeIntensity;
+      camera.position.x += shakeX;
+      camera.position.y += shakeY;
+  
+      // Road & Obstacle Management
+      if (roadSegments.length > 0) {
+        const farthestRoadZ = roadSegments[roadSegments.length - 1].position.z;
+        if (
+          car.position.z <
+          farthestRoadZ + roadSegmentLength * (visibleSegments / 2)
+        ) {
+          const nextSegmentZ = farthestRoadZ - roadSegmentLength;
+          createRoadSegment(nextSegmentZ);
+          roadSegments.sort((a, b) => b.position.z - a.position.z);
+        }
+      } else {
+        createRoadSegment(
+          car.position.z - roadSegmentLength * (visibleSegments / 2),
+        );
         roadSegments.sort((a, b) => b.position.z - a.position.z);
       }
+      cleanupOldRoadSegments();
+      const currentMinInterval = Math.max(50, 90 - distanceTraveled * 0.01);
+      const currentMaxInterval = Math.max(100, 180 - distanceTraveled * 0.02);
+      const spawnDistanceAhead = 280;
+      const spawnTriggerZ = car.position.z - spawnDistanceAhead;
+      if (distanceTraveled > nextObstacleSpawnDistance) {
+        spawnBuildingObstacle(spawnTriggerZ);
+        const distanceToAdd =
+          currentMinInterval +
+          Math.random() * (currentMaxInterval - currentMinInterval);
+        nextObstacleSpawnDistance += distanceToAdd;
+      }
+      checkCollisionsAndNearMisses(); // Check AFTER updating position
+  
+      // Update Visual Effects
+      updateRain(delta);
+      updateCarTrail();
+  
+      // --- >>> SPEED DISPLAY MODIFICATION <<< ---
+      // Update UI
+      if (speedometerElement) {
+          // Calculate display speed and convert to integer
+          const displaySpeed = Math.floor(speed * SPEED_DISPLAY_MULTIPLIER);
+          speedometerElement.innerText = `SPD: ${displaySpeed} km/h`;
+      }
+      // --- >>> SPEED DISPLAY MODIFICATION END <<< ---
+  
+      if (scoreElement) scoreElement.innerText = `Score: ${score}`;
+  
     } else {
-      createRoadSegment(
-        car.position.z - roadSegmentLength * (visibleSegments / 2),
-      );
-      roadSegments.sort((a, b) => b.position.z - a.position.z);
+      console.warn("Vehicle entity lost in loop!");
     }
-    cleanupOldRoadSegments();
-    const currentMinInterval = Math.max(50, 90 - distanceTraveled * 0.01);
-    const currentMaxInterval = Math.max(100, 180 - distanceTraveled * 0.02);
-    const spawnDistanceAhead = 280;
-    const spawnTriggerZ = car.position.z - spawnDistanceAhead;
-    if (distanceTraveled > nextObstacleSpawnDistance) {
-      spawnBuildingObstacle(spawnTriggerZ);
-      const distanceToAdd =
-        currentMinInterval +
-        Math.random() * (currentMaxInterval - currentMinInterval);
-      nextObstacleSpawnDistance += distanceToAdd;
+  
+    // Collision Camera Shake (Still happens on game over)
+    if (collisionShakeTime > 0) {
+      const shakeAmount =
+        COLLISION_SHAKE_INTENSITY *
+        (collisionShakeTime / COLLISION_SHAKE_DURATION);
+      camera.position.x += (Math.random() - 0.5) * shakeAmount;
+      camera.position.y += (Math.random() - 0.5) * shakeAmount;
+      camera.position.z += (Math.random() - 0.5) * shakeAmount;
+      collisionShakeTime -= delta;
     }
-    checkCollisionsAndNearMisses(); // Check AFTER updating position
-
-    // Update Visual Effects
-    updateRain(delta);
-    updateCarTrail();
-
-    // Update UI
-    if (speedometerElement)
-      speedometerElement.innerText = `SPD: ${(speed * SPEED_DISPLAY_MULTIPLIER).toFixed(1)} km/h`;
-    if (scoreElement) scoreElement.innerText = `Score: ${score}`;
-  } else {
-    console.warn("Vehicle entity lost in loop!");
+  
+    // Render
+    composer.render(delta);
   }
-
-  // Collision Camera Shake (Still happens on game over)
-  if (collisionShakeTime > 0) {
-    /* ... shake ... */
-    const shakeAmount =
-      COLLISION_SHAKE_INTENSITY *
-      (collisionShakeTime / COLLISION_SHAKE_DURATION);
-    camera.position.x += (Math.random() - 0.5) * shakeAmount;
-    camera.position.y += (Math.random() - 0.5) * shakeAmount;
-    camera.position.z += (Math.random() - 0.5) * shakeAmount;
-    collisionShakeTime -= delta;
-  }
-
-  // Render
-  composer.render(delta);
-}
 
 // --- Event Listeners --- (Unchanged)
 document.addEventListener("DOMContentLoaded", initializeApp);
